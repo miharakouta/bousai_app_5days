@@ -6,6 +6,10 @@
     <div id="shelterMap" class="map"></div>
 </section>
 
+<button id="testRunButton" class="test-run-button" type="button">
+    テスト実行
+</button>
+
 <section class="home-card">
     <h2 class="section-heading">
         <span>☁ 青森市 気象警報・注意報</span>
@@ -24,10 +28,12 @@
         <article class="notification-item">
             <div class="notification-header">
                 <div>
-                    <h3>{{ history.area_name|default('対象地域不明') }}</h3>
+                    <h3>{{ history.title|default(history.area_name|default('対象地域不明')) }}</h3>
                     <p class="notification-meta">通知日時: {{ history.timestamp|default('不明') }}</p>
                 </div>
-                {% if history.has_emergency %}
+                {% if history.event_type in ['shelter', 'instruction'] %}
+                <span class="notification-badge badge-info">更新</span>
+                {% elif history.has_emergency %}
                 <span class="notification-badge badge-emergency">緊急</span>
                 {% elif history.has_warning %}
                 <span class="notification-badge badge-warning">警報</span>
@@ -37,6 +43,11 @@
                 <span class="notification-badge badge-clear">発表なし</span>
                 {% endif %}
             </div>
+            {% if history.content %}
+            <p class="notification-content">{{ history.content }}</p>
+            {% endif %}
+            {% if history.event_type in ['shelter', 'instruction'] %}
+            {% else %}
             <p class="notification-meta">気象庁発表: {{ history.report_time|default('不明') }}</p>
             {% if history.warnings %}
             <ul class="notification-warnings">
@@ -50,11 +61,35 @@
             {% else %}
             <p class="notification-clear">この時点で発表されている警報・注意報はありません。</p>
             {% endif %}
+            {% endif %}
         </article>
         {% endfor %}
     </div>
     {% else %}
     <p class="notification-empty">通知履歴はありません。</p>
+    {% endif %}
+</section>
+
+<section class="home-card">
+    <h2 class="section-heading"><span>📣 指示・発信</span></h2>
+    {% if board_notifications %}
+    <div class="notification-list">
+        {% for notice in board_notifications %}
+        <article class="notification-item">
+            <div class="notification-header">
+                <h3>住民向け発信</h3>
+                <span class="notification-badge badge-info">発信中</span>
+            </div>
+            <p class="notification-content">{{ notice.content }}</p>
+            {% if notice.shelter %}
+            <p class="notification-meta">避難先: {{ notice.shelter }}</p>
+            {% endif %}
+            <p class="notification-meta">発信日時: {{ notice.created_at|default('不明') }}</p>
+        </article>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="notification-empty">現在、住民向けの発信はありません。</p>
     {% endif %}
 </section>
 
@@ -92,6 +127,79 @@ document.addEventListener('DOMContentLoaded', function() {
         map.fitBounds(shelterLocations, { padding: [24, 24], maxZoom: 14 });
     }
 
+    let testLayers = [];
+    let actualWarningActive = false;
+    const testRunButton = document.getElementById('testRunButton');
+
+    function setWarningBackground(isActive) {
+        document.body.classList.toggle('warning-active', isActive);
+    }
+
+    function clearTestLayers() {
+        testLayers.forEach(layer => map.removeLayer(layer));
+        testLayers = [];
+    }
+
+    function runDisasterTest() {
+        clearTestLayers();
+
+        const cityHall = L.marker([40.8222, 140.7474])
+            .bindPopup('<strong>現在地点</strong><br>青森市役所');
+        const evacuationRoute = L.polyline([
+            [40.8222, 140.7474],
+            [40.8194, 140.7459],
+            [40.8165, 140.7490],
+            [40.8088, 140.7521]
+        ], {
+            color: '#c45a18',
+            weight: 7,
+            opacity: 1
+        }).bindPopup('<strong>避難経路</strong><br>現在地点：青森市役所');
+
+        const warningArea = L.polygon([
+            [40.8350, 140.7240],
+            [40.8390, 140.7580],
+            [40.8160, 140.7730],
+            [40.7980, 140.7550],
+            [40.8060, 140.7220]
+        ], {
+            color: '#d66b6b',
+            weight: 2,
+            fillColor: '#f4b9b9',
+            fillOpacity: 0.48
+        }).bindPopup('<strong>警報エリア</strong><br>青森市全域に大雨警報');
+
+        const advisoryArea = L.polygon([
+            [40.8500, 140.7000],
+            [40.8610, 140.7740],
+            [40.8000, 140.7970],
+            [40.7750, 140.7100]
+        ], {
+            color: '#d2ad42',
+            weight: 2,
+            fillColor: '#f8e7a6',
+            fillOpacity: 0.42
+        }).bindPopup('<strong>注意報エリア</strong><br>周辺地域に注意報');
+
+        testLayers = [cityHall, advisoryArea, warningArea, evacuationRoute];
+        testLayers.forEach(layer => layer.addTo(map));
+        map.fitBounds(warningArea.getBounds(), { padding: [24, 24] });
+        setWarningBackground(true);
+        testRunButton.textContent = 'テスト解除';
+        testRunButton.classList.add('is-active');
+    }
+
+    testRunButton.addEventListener('click', function() {
+        if (testLayers.length > 0) {
+            clearTestLayers();
+            setWarningBackground(actualWarningActive);
+            testRunButton.textContent = 'テスト実行';
+            testRunButton.classList.remove('is-active');
+            return;
+        }
+        runDisasterTest();
+    });
+
     // 気象警報・注意報の自動更新機能
     function updateWeatherWarnings() {
         fetch('/api/weather_warnings')
@@ -109,9 +217,16 @@ document.addEventListener('DOMContentLoaded', function() {
         const weatherContent = document.getElementById('weatherContent');
 
         if (data.error) {
+            actualWarningActive = false;
+            setWarningBackground(testLayers.length > 0);
             weatherContent.innerHTML = '<p class="weather-status">気象情報の取得に失敗しました</p>';
             return;
         }
+
+        actualWarningActive = (data.warnings || []).some(warning =>
+            warning.name && warning.name.includes('警報')
+        );
+        if (testLayers.length === 0) setWarningBackground(actualWarningActive);
 
         let warningsHtml = '';
         if (data.warnings && data.warnings.length > 0) {

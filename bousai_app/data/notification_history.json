@@ -1,5 +1,17 @@
 [
   {
+    "timestamp": "2026年08月27日 03:24",
+    "area_name": "青森市",
+    "title": "避難所登録",
+    "content": "「いいい」の避難所登録が完了しました。",
+    "event_type": "shelter",
+    "warnings": [],
+    "warning_count": 0,
+    "has_emergency": false,
+    "has_warning": false,
+    "has_advisory": false
+  },
+  {
     "timestamp": "2026年06月15日 09:55",
     "area_name": "青森市",
     "report_time": "2026年05月23日 04:12",

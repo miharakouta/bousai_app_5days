@@ -108,6 +108,32 @@ def save_instructions():
             json.dump(instructions, f, ensure_ascii=False, indent=2)
     except Exception:
         pass
+
+def save_notification_history():
+    """通知履歴をファイルに保存する"""
+    with open(NOTIFICATION_HISTORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(notification_history, f, ensure_ascii=False, indent=2)
+
+def add_notification(title, content, event_type):
+    """操作結果をホーム画面の通知履歴へ追加する"""
+    notification_history.insert(0, {
+        'timestamp': get_japan_time(),
+        'area_name': AREA_NAME,
+        'title': title,
+        'content': content,
+        'event_type': event_type,
+        'warnings': [],
+        'warning_count': 0,
+        'has_emergency': False,
+        'has_warning': False,
+        'has_advisory': False
+    })
+    try:
+        save_notification_history()
+    except OSError:
+        notification_history.pop(0)
+        raise
+
 # ────────────────────────────────
 
 # ────────────────────────────────
@@ -248,6 +274,7 @@ def index():
         'index.html',
         resident_notices=resident_notices,
         notification_history=notification_history,
+        board_notifications=resident_notices,
         last_login_time=session.get('last_login_time'),
         shelters=shelters
     )
@@ -255,12 +282,12 @@ def index():
 # ログインページ
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    # リダイレクト先を取得（デフォルトは避難所登録画面）
+    # リダイレクト先を取得（デフォルトはホーム画面）
     next_url = request.args.get('next') or request.form.get('next')
 
     # 安全でないURLの場合はデフォルトページにリダイレクト
     if not next_url or not is_safe_url(next_url):
-        next_url = url_for('shelter_register')
+        next_url = url_for('index')
 
     if request.method == 'POST':
         password = request.form.get('password', '').strip()
@@ -308,6 +335,11 @@ def shelter_register():
         shelters.append({'id': next_id, 'name': name})
         try:
             save_shelters()
+            add_notification(
+                '避難所登録',
+                f'「{name}」の避難所登録が完了しました。',
+                'shelter'
+            )
         except OSError:
             shelters.pop()
             return render_template(
@@ -341,9 +373,47 @@ def contact():
 
 
 # 指示ボード：住民向けの指示を一覧で確認する
-@app.route('/board')
+@app.route('/board', methods=['GET', 'POST'])
 @login_required
 def board():
+    if request.method == 'POST':
+        content = request.form.get('content', '').strip()
+        shelter = request.form.get('shelter', '').strip()
+        if not content:
+            return render_template(
+                'board.html',
+                instructions=[i for i in instructions if i.get('target') == '住民'],
+                error=True,
+                message='発信内容を入力してください。'
+            )
+
+        instruction = {
+            'id': max((item.get('id', 0) for item in instructions), default=0) + 1,
+            'target': '住民',
+            'content': content,
+            'shelter': shelter,
+            'status': '発信中',
+            'created_at': get_japan_time(),
+            'updated_at': get_japan_time()
+        }
+        instructions.insert(0, instruction)
+        try:
+            save_instructions()
+            message = content
+            if shelter:
+                message += f'（避難先: {shelter}）'
+            add_notification('指示・発信', message, 'instruction')
+        except OSError:
+            instructions.pop(0)
+            return render_template(
+                'board.html',
+                instructions=[i for i in instructions if i.get('target') == '住民'],
+                error=True,
+                message='発信内容を保存できませんでした。'
+            )
+
+        return redirect(url_for('board'))
+
     resident_instructions = [i for i in instructions if i.get('target') == '住民']
     return render_template('board.html', instructions=resident_instructions)
 
