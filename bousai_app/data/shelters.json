@@ -1,18 +1,30 @@
 [
   {
     "id": 1,
-    "name": "御所見小学校"
+    "name": "青森市立長島小学校",
+    "district": "中央部",
+    "latitude": 40.8219,
+    "longitude": 140.7408
   },
   {
     "id": 2,
-    "name": "片瀬小学校"
+    "name": "青森市立浦町小学校",
+    "district": "中央部",
+    "latitude": 40.8088,
+    "longitude": 140.7521
   },
   {
     "id": 5,
-    "name": "鵠洋小学校"
+    "name": "青森市立沖館小学校",
+    "district": "西部",
+    "latitude": 40.8335,
+    "longitude": 140.7166
   },
   {
     "id": 6,
-    "name": "あああ"
+    "name": "青森市立筒井小学校",
+    "district": "東部",
+    "latitude": 40.7757,
+    "longitude": 140.7734
   }
 ]

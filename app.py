@@ -248,7 +248,8 @@ def index():
         'index.html',
         resident_notices=resident_notices,
         notification_history=notification_history,
-        last_login_time=session.get('last_login_time')
+        last_login_time=session.get('last_login_time'),
+        shelters=shelters
     )
 
 # ログインページ
@@ -332,6 +333,11 @@ def shelter_search():
 @app.route('/all_shelters')
 def all_shelters():
     return render_template('search_results.html', results=shelters)
+
+# 問い合わせホーム
+@app.route('/contact')
+def contact():
+    return render_template('contact.html')
 
 
 # 指示ボード：住民向けの指示を一覧で確認する

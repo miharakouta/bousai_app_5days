@@ -76,6 +76,22 @@ document.addEventListener('DOMContentLoaded', function() {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
+    const shelters = {{ shelters|tojson }};
+    const shelterLocations = shelters
+        .filter(shelter => Number.isFinite(Number(shelter.latitude)) &&
+            Number.isFinite(Number(shelter.longitude)))
+        .map(shelter => {
+            const location = [Number(shelter.latitude), Number(shelter.longitude)];
+            L.marker(location)
+                .addTo(map)
+                .bindPopup(`<strong>${shelter.name}</strong>`);
+            return location;
+        });
+
+    if (shelterLocations.length > 0) {
+        map.fitBounds(shelterLocations, { padding: [24, 24], maxZoom: 14 });
+    }
+
     // 気象警報・注意報の自動更新機能
     function updateWeatherWarnings() {
         fetch('/api/weather_warnings')
