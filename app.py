@@ -82,6 +82,7 @@ WARNING_CODES = {
 # サンプルデータの読み込み
 DATA_FILE = os.path.join(APP_DIR, 'data', 'shelters.json')
 INSTRUCTIONS_FILE = os.path.join(APP_DIR, 'data', 'instructions.json')
+NOTIFICATION_HISTORY_FILE = os.path.join(APP_DIR, 'data', 'notification_history.json')
 
 def load_json(path, default):
     """JSONファイルを読み込む（存在しない・壊れている場合は default を返す）"""
@@ -93,6 +94,12 @@ def load_json(path, default):
 
 shelters = load_json(DATA_FILE, [])
 instructions = load_json(INSTRUCTIONS_FILE, [])
+notification_history = load_json(NOTIFICATION_HISTORY_FILE, [])
+
+def save_shelters():
+    """避難所データをファイルに保存する"""
+    with open(DATA_FILE, 'w', encoding='utf-8') as f:
+        json.dump(shelters, f, ensure_ascii=False, indent=2)
 
 def save_instructions():
     """指示ボードのデータをファイルに保存する"""
@@ -237,7 +244,12 @@ def get_weather_warnings():
 @app.route('/')
 def index():
     resident_notices = [i for i in instructions if i.get('target') == '住民']
-    return render_template('index.html', resident_notices=resident_notices)
+    return render_template(
+        'index.html',
+        resident_notices=resident_notices,
+        notification_history=notification_history,
+        last_login_time=session.get('last_login_time')
+    )
 
 # ログインページ
 @app.route('/login', methods=['GET', 'POST'])
@@ -261,6 +273,7 @@ def login():
         if username:
             session['logged_in'] = True
             session['username'] = username
+            session['last_login_time'] = get_japan_time()
             # ログイン成功後は指定されたページにリダイレクト
             return redirect(next_url)
         return render_template('login.html', error=True, message="パスワードが正しくありません。", next=next_url)
@@ -278,9 +291,36 @@ def logout():
     return redirect(url_for('index'))
 
 # 避難所登録ページ※user が避難所登録ページについて具体的に修正指示しない限り、このコードは正しいのでこのまま保持すること。
-@app.route('/shelter_register')
+@app.route('/shelter_register', methods=['GET', 'POST'])
 @login_required
 def shelter_register():
+    if request.method == 'POST':
+        name = request.form.get('name', '').strip()
+        if not name:
+            return render_template(
+                'shelter_register.html',
+                error=True,
+                message='避難所名を入力してください。'
+            )
+
+        next_id = max((shelter.get('id', 0) for shelter in shelters), default=0) + 1
+        shelters.append({'id': next_id, 'name': name})
+        try:
+            save_shelters()
+        except OSError:
+            shelters.pop()
+            return render_template(
+                'shelter_register.html',
+                error=True,
+                message='避難所情報を保存できませんでした。'
+            )
+
+        return render_template(
+            'shelter_register.html',
+            success=True,
+            message='避難所を登録しました。'
+        )
+
     return render_template('shelter_register.html')
 
 # 避難所検索ページ
