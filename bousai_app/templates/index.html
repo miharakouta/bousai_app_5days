@@ -3,12 +3,29 @@
 {% block content %}
 <section class="home-card">
     <h2 class="section-heading"><span>📍 避難所マップ</span></h2>
+    <div class="map-tools">
+        <div>
+            <h3>過去の災害を重ねて表示</h3>
+            <p class="map-help">年・種類・地域を選ぶと、過去の発生地点を確認できます。</p>
+        </div>
+        <div class="map-filters">
+            <label>年<select id="disasterYear"><option value="all">すべて</option></select></label>
+            <label>種類<select id="disasterType"><option value="all">すべて</option></select></label>
+            <label>地域<select id="disasterLocation"><option value="all">すべて</option></select></label>
+        </div>
+    </div>
     <div id="shelterMap" class="map"></div>
+    <div id="disasterLegend" class="disaster-legend"></div>
 </section>
 
 <button id="testRunButton" class="test-run-button" type="button">
     テスト実行
 </button>
+
+<section class="home-card">
+    <h2 class="section-heading"><span>🌤 青森市 現在の天気</span><span class="refresh-label">10分おき自動更新</span></h2>
+    <div id="forecastContent" class="weather-panel"><p>読み込み中...</p></div>
+</section>
 
 <section class="home-card">
     <h2 class="section-heading">
@@ -112,6 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }).addTo(map);
 
     const shelters = {{ shelters|tojson }};
+    const historicalDisasters = {{ historical_disasters|tojson }};
     const shelterLocations = shelters
         .filter(shelter => Number.isFinite(Number(shelter.latitude)) &&
             Number.isFinite(Number(shelter.longitude)))
@@ -126,6 +144,37 @@ document.addEventListener('DOMContentLoaded', function() {
     if (shelterLocations.length > 0) {
         map.fitBounds(shelterLocations, { padding: [24, 24], maxZoom: 14 });
     }
+
+    const disasterLayer = L.layerGroup().addTo(map);
+    const filterIds = ['disasterYear', 'disasterType', 'disasterLocation'];
+    const filterFields = { disasterYear: 'year', disasterType: 'type', disasterLocation: 'location' };
+    filterIds.forEach(id => {
+        const select = document.getElementById(id);
+        const values = [...new Set(historicalDisasters.map(disaster => disaster[filterFields[id]]))].sort((a, b) => String(b).localeCompare(String(a), 'ja'));
+        values.forEach(value => select.add(new Option(value, value)));
+        select.addEventListener('change', renderHistoricalDisasters);
+    });
+
+    function renderHistoricalDisasters() {
+        disasterLayer.clearLayers();
+        const selected = Object.fromEntries(filterIds.map(id => [filterFields[id], document.getElementById(id).value]));
+        const filtered = historicalDisasters.filter(disaster =>
+            Object.entries(selected).every(([field, value]) => value === 'all' || String(disaster[field]) === value)
+        );
+        filtered.forEach(disaster => {
+            L.marker([disaster.latitude, disaster.longitude], {
+                icon: L.divIcon({
+                    className: 'historical-pin',
+                    html: '<span aria-hidden="true"></span>',
+                    iconSize: [22, 30],
+                    iconAnchor: [11, 30],
+                    popupAnchor: [0, -28]
+                })
+            }).bindPopup(`<strong>${disaster.year}年 ${disaster.type}</strong><br>${disaster.date}<br>${disaster.location}<br>${disaster.description}`).addTo(disasterLayer);
+        });
+        document.getElementById('disasterLegend').textContent = `${filtered.length}件の発生地点を表示中`;
+    }
+    renderHistoricalDisasters();
 
     let testLayers = [];
     let actualWarningActive = false;
@@ -247,8 +296,25 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
+    function updateForecast() {
+        fetch('/api/weather_forecast')
+            .then(response => response.json())
+            .then(data => {
+                const content = document.getElementById('forecastContent');
+                if (data.error) {
+                    content.innerHTML = '<p class="weather-status">現在の天気を取得できませんでした</p>';
+                    return;
+                }
+                content.innerHTML = `<p class="weather-place">⌖ ${data.area_name}</p><div class="forecast-values"><strong>${data.condition}</strong><span>${data.temperature}°C</span><span>体感 ${data.apparent_temperature}°C</span><span>湿度 ${data.humidity}%</span><span>風速 ${data.wind_speed} km/h</span></div><p class="weather-meta">観測: ${data.observed_at || '不明'} / 更新: ${data.last_fetch_time}</p>`;
+            })
+            .catch(() => {
+                document.getElementById('forecastContent').innerHTML = '<p class="weather-status">現在の天気を取得できませんでした</p>';
+            });
+    }
+
     // 初回表示＋10分（600,000ミリ秒）おきに自動更新
     updateWeatherWarnings();
+    updateForecast();
     setInterval(updateWeatherWarnings, 600000);
 });
 </script>

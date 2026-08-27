@@ -157,6 +157,83 @@
 
     .home-card {
       padding: 28px;
+        '避難所マップ': 'Shelter Map',
+        '過去の災害を重ねて表示': 'Show historical disasters',
+        '年・種類・地域を選ぶと、過去の発生地点を確認できます。': 'Choose a year, type, or area to view past disaster locations.',
+        '年': 'Year',
+        '種類': 'Type',
+        '地域': 'Area',
+        'すべて': 'All',
+        '件の発生地点を表示中': ' disaster locations displayed',
+        '現在の天気': 'Current Weather',
+        '快晴': 'Clear sky',
+        '晴れ': 'Sunny',
+        '一部曇り': 'Partly cloudy',
+        '曇り': 'Cloudy',
+        '霧': 'Fog',
+        '弱い雨': 'Light rain',
+        '雨': 'Rain',
+        '強い雨': 'Heavy rain',
+        '弱い雪': 'Light snow',
+        '雪': 'Snow',
+        '強い雪': 'Heavy snow',
+        '雷雨': 'Thunderstorm',
+        '天気情報あり': 'Weather information available',
+        '体感': 'Feels like',
+        '湿度': 'Humidity',
+        '風速': 'Wind',
+        '観測:': 'Observed:',
+        '更新:': 'Updated:',
+        '青森市浪岡': 'Namioka, Aomori City',
+        '青森市中心部': 'Central Aomori City',
+        '青森市南東部': 'Southeastern Aomori City',
+        '青森市東部': 'Eastern Aomori City',
+        '青森市西部': 'Western Aomori City',
+        '大雨・洪水': 'Heavy rain and flooding',
+        '大雪': 'Heavy snow',
+        '土砂災害': 'Landslide',
+        '地震': 'Earthquake',
+        '集中豪雨により河川水位が上昇し、周辺道路が冠水。': 'Heavy rain raised river levels and flooded nearby roads.',
+        '短時間の大雪により、主要道路の通行に影響。': 'Heavy snowfall in a short period affected major roads.',
+        '大雨の影響で斜面の一部が崩落。': 'Heavy rain caused part of a slope to collapse.',
+        '記録的な降雪により、集落の一部で孤立が発生。': 'Record snowfall left part of the settlement isolated.',
+        '地震により建物の点検と一時避難を実施。': 'Buildings were inspected and temporary evacuation was carried out after the earthquake.',
+        '現在の天気を取得できませんでした': 'Unable to retrieve current weather',
+        'テスト実行': 'Run test',
+        'テスト解除': 'Stop test',
+        '現在地点': 'Current location',
+        '青森市役所': 'Aomori City Hall',
+        '避難経路': 'Evacuation route',
+        '警報エリア': 'Warning area',
+        '注意報エリア': 'Advisory area',
+        '青森市全域に大雨警報': 'Heavy rain warning for all of Aomori City',
+        '周辺地域に注意報': 'Advisory for surrounding areas',
+        'メニューを開く': 'Open menu',
+        'メニューを閉じる': 'Close menu',
+        '英語に翻訳': 'Translate to English',
+        '日本語に戻す': 'Return to Japanese',
+        '問い合わせホーム': 'Contact',
+        '防災アプリに関するお問い合わせはこちらからご連絡ください。': 'Please contact us here with questions about the disaster prevention app.',
+        'お問い合わせ先': 'Contact information',
+        '防災アプリ運営窓口': 'Disaster Prevention App Support Desk',
+        '受付時間：平日 9:00〜17:00': 'Hours: Weekdays, 9:00 AM-5:00 PM',
+        '住民として利用する': 'Use as resident',
+        '管理者として利用する': 'Use as administrator',
+        '利用する画面を選択し、パスワード「123」を入力してください。': 'Choose a screen to use and enter the password "123".',
+        '共通パスワード': 'Shared password',
+        '発信する': 'Publish',
+        '発信内容': 'Message',
+        '避難先（任意）': 'Destination shelter (optional)',
+        '住民向け発信': 'Resident announcement',
+        '発信日時:': 'Published:',
+        '現在、住民向けの発信はありません。': 'There are no announcements for residents.',
+        '全施設一覧': 'All shelters',
+        '該当する避難所が見つかりませんでした': 'No matching shelters were found.',
+        '避難所名（必須）': 'Shelter name (required)',
+        '登録されている避難所を確認できます。': 'View registered shelters.',
+        '新しい避難所情報を登録します。': 'Register a new shelter.',
+        '避難所を登録しました。': 'The shelter was registered.',
+        '避難所名を入力してください。': 'Please enter a shelter name.'
       margin-bottom: 36px;
       border: 1px solid #f0f3f7;
       border-radius: 16px;
@@ -182,6 +259,48 @@
       overflow: hidden;
       border-radius: 10px;
     }
+
+    .historical-pin {
+      width: 22px !important;
+      height: 30px !important;
+      margin: 0 !important;
+      background: transparent;
+    }
+    .historical-pin span {
+      display: block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #fff;
+      border-radius: 50% 50% 50% 0;
+      background: #d6312f;
+      box-shadow: 0 1px 4px rgba(38, 59, 88, .45);
+      transform: rotate(-45deg) translate(3px, 3px);
+    }
+
+    .map-tools {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 16px;
+    }
+    .map-tools h3 { margin: 0 0 5px; font-size: 16px; }
+    .map-help { margin: 0; color: var(--muted); font-size: 13px; }
+    .map-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+    .map-filters label { color: var(--muted); font-size: 12px; font-weight: 700; }
+    .map-filters select {
+      display: block;
+      min-width: 98px;
+      margin-top: 4px;
+      padding: 7px 8px;
+      border: 1px solid #d8e0ea;
+      border-radius: 5px;
+      color: var(--ink);
+      background: #fff;
+      font: inherit;
+      font-size: 13px;
+    }
+    .disaster-legend { margin-top: 10px; color: var(--muted); font-size: 13px; }
 
     .test-run-button {
       position: fixed;
@@ -219,6 +338,9 @@
     .weather-place { font-weight: 700; }
     .weather-status { color: #269d55; font-weight: 700; }
     .weather-meta { color: var(--muted); font-size: 14px; }
+    .forecast-values { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 18px; margin-bottom: 13px; }
+    .forecast-values strong { color: var(--blue-dark); font-size: 20px; }
+    .forecast-values span { color: var(--ink); font-size: 15px; }
 
     .notification-list { display: grid; gap: 12px; }
     .notification-item {
@@ -290,6 +412,9 @@
       .home-card { padding: 18px; margin-bottom: 20px; border-radius: 12px; }
       .section-heading { align-items: flex-start; font-size: 18px; }
       .refresh-label { font-size: 12px; }
+      .map-tools { display: block; }
+      .map-filters { margin-top: 12px; }
+      .map-filters select { min-width: 0; max-width: 100%; }
       .map { height: 280px; }
       .test-run-button { left: 14px; bottom: 14px; }
       .notification-item { padding: 14px; }
@@ -317,6 +442,7 @@
           <svg class="menu-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
           <span>避難所検索</span>
         </a>
+        {% if session.get('role') == 'admin' %}
         <a href="/shelter_register" title="新しい避難所情報を登録・更新できます。（管理者専用）">
           <svg class="menu-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6Z"></path><path d="M12 8v8M8 12h8"></path></svg>
           <span>避難所登録</span>
@@ -325,6 +451,7 @@
           <svg class="menu-icon" aria-hidden="true" viewBox="0 0 24 24"><path d="m4 10 12-4v12L4 14v-4Z"></path><path d="M16 9c2 1 3 2 3 3s-1 2-3 3M20 7c1.5 1.5 2 3 2 5s-.5 3.5-2 5"></path><path d="M4 14v5h3l2-4"></path></svg>
           <span>指示・発信ボード</span>
         </a>
+        {% endif %}
         <a href="/contact" title="困ったときの連絡先やサポート情報を確認できます。">
           <svg class="menu-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M9.7 9a2.4 2.4 0 1 1 4.1 1.7c-1.1 1-1.8 1.3-1.8 2.8M12 17h.01"></path></svg>
           <span>問い合わせ</span>
@@ -335,7 +462,7 @@
             <span>ログアウト</span>
           </a>
         {% else %}
-          <a href="/login" title="管理者機能を利用するためにログインします。">
+          <a href="/login" title="住民としてログインします。">
             <svg class="menu-icon" aria-hidden="true" viewBox="0 0 24 24"><circle cx="7.5" cy="15.5" r="3.5"></circle><path d="m10 13 9-9M15 8l2 2M12 11l2 2"></path></svg>
             <span>ログイン</span>
           </a>
@@ -401,7 +528,46 @@
       '発信一覧': 'Information List',
       '登録されている指示はありません。': 'There are no registered notices.',
       '内容': 'Content',
-      '避難先:': 'Destination shelter:'
+      '避難先:': 'Destination shelter:',
+      '過去の災害を重ねて表示': 'Show historical disasters',
+      '年・種類・地域を選ぶと、過去の発生地点を確認できます。': 'Choose a year, type, or area to view past disaster locations.',
+      '年': 'Year', '種類': 'Type', '地域': 'Area', 'すべて': 'All',
+      '件の発生地点を表示中': ' disaster locations displayed',
+      '現在の天気': 'Current Weather', '快晴': 'Clear sky', '晴れ': 'Sunny',
+      '一部曇り': 'Partly cloudy', '曇り': 'Cloudy', '霧': 'Fog',
+      '弱い雨': 'Light rain', '雨': 'Rain', '強い雨': 'Heavy rain',
+      '弱い雪': 'Light snow', '雪': 'Snow', '強い雪': 'Heavy snow',
+      '霧氷': 'Rime', '弱い霧雨': 'Light drizzle', '霧雨': 'Drizzle',
+      '強い霧雨': 'Heavy drizzle', 'にわか雨': 'Showers', '激しいにわか雨': 'Violent showers',
+      '雷雨': 'Thunderstorm', '雷雨・雹': 'Thunderstorm and hail', '天気情報あり': 'Weather information available',
+      '体感': 'Feels like', '湿度': 'Humidity',
+      '風速': 'Wind', '観測:': 'Observed:', '更新:': 'Updated:',
+      '青森市浪岡': 'Namioka, Aomori City', '青森市中心部': 'Central Aomori City',
+      '青森市南東部': 'Southeastern Aomori City', '青森市東部': 'Eastern Aomori City',
+      '青森市西部': 'Western Aomori City', '大雨・洪水': 'Heavy rain and flooding',
+      '大雪': 'Heavy snow', '土砂災害': 'Landslide', '地震': 'Earthquake',
+      '集中豪雨により河川水位が上昇し、周辺道路が冠水。': 'Heavy rain raised river levels and flooded nearby roads.',
+      '短時間の大雪により、主要道路の通行に影響。': 'Heavy snowfall in a short period affected major roads.',
+      '大雨の影響で斜面の一部が崩落。': 'Heavy rain caused part of a slope to collapse.',
+      '記録的な降雪により、集落の一部で孤立が発生。': 'Record snowfall left part of the settlement isolated.',
+      '地震により建物の点検と一時避難を実施。': 'Buildings were inspected and temporary evacuation was carried out after the earthquake.',
+      '現在の天気を取得できませんでした': 'Unable to retrieve current weather',
+      'テスト実行': 'Run test', 'テスト解除': 'Stop test', '現在地点': 'Current location',
+      '青森市役所': 'Aomori City Hall', '避難経路': 'Evacuation route',
+      '警報エリア': 'Warning area', '注意報エリア': 'Advisory area',
+      '青森市全域に大雨警報': 'Heavy rain warning for all of Aomori City',
+      '周辺地域に注意報': 'Advisory for surrounding areas', 'メニューを開く': 'Open menu',
+      'メニューを閉じる': 'Close menu', '英語に翻訳': 'Translate to English',
+      '日本語に戻す': 'Return to Japanese', '問い合わせホーム': 'Contact',
+      '管理者専用': 'Administrators only',
+      '防災アプリに関するお問い合わせはこちらからご連絡ください。': 'Please contact us here with questions about the disaster prevention app.',
+      'お問い合わせ先': 'Contact information', '防災アプリ運営窓口': 'Disaster Prevention App Support Desk',
+      '受付時間：平日 9:00〜17:00': 'Hours: Weekdays, 9:00 AM-5:00 PM',
+      '住民として利用する': 'Use as resident', '管理者として利用する': 'Use as administrator',
+      '利用する画面を選択し、パスワード「123」を入力してください。': 'Choose a screen to use and enter the password "123".',
+      '共通パスワード': 'Shared password', '発信する': 'Publish', '発信内容': 'Message',
+      '避難先（任意）': 'Destination shelter (optional)', '住民向け発信': 'Resident announcement',
+      '発信日時:': 'Published:', '現在、住民向けの発信はありません。': 'There are no announcements for residents.'
     };
 
     let isEnglish = false;
@@ -412,14 +578,16 @@
     function closeSiteMenu() {
       if (!menuToggle || !siteMenu) return;
       menuToggle.setAttribute('aria-expanded', 'false');
-      menuToggle.setAttribute('aria-label', 'メニューを開く');
+      menuToggle.setAttribute('aria-label', isEnglish ? 'Open menu' : 'メニューを開く');
       siteMenu.hidden = true;
     }
 
     menuToggle?.addEventListener('click', () => {
       const isOpen = menuToggle.getAttribute('aria-expanded') === 'true';
       menuToggle.setAttribute('aria-expanded', String(!isOpen));
-      menuToggle.setAttribute('aria-label', isOpen ? 'メニューを開く' : 'メニューを閉じる');
+      menuToggle.setAttribute('aria-label', isEnglish
+        ? (isOpen ? 'Open menu' : 'Close menu')
+        : (isOpen ? 'メニューを開く' : 'メニューを閉じる'));
       if (siteMenu) siteMenu.hidden = isOpen;
     });
 
@@ -433,6 +601,12 @@
       if (event.key === 'Escape') closeSiteMenu();
     });
 
+    function translateValue(value) {
+      return Object.entries(translations)
+        .sort(([first], [second]) => second.length - first.length)
+        .reduce((text, [japanese, english]) => text.split(japanese).join(english), value);
+    }
+
     function translateText(root) {
       const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
       const textNodes = [];
@@ -443,18 +617,14 @@
       }
 
       textNodes.forEach(textNode => {
-        let text = textNode.nodeValue;
-        Object.entries(translations)
-          .sort(([first], [second]) => second.length - first.length)
-          .forEach(([japanese, english]) => {
-            text = text.split(japanese).join(english);
-          });
-        textNode.nodeValue = text;
+        textNode.nodeValue = translateValue(textNode.nodeValue);
       });
 
-      root.querySelectorAll('[aria-label]').forEach(element => {
-        const translated = translations[element.getAttribute('aria-label')];
-        if (translated) element.setAttribute('aria-label', translated);
+      root.querySelectorAll('[aria-label], [title], [placeholder], input[value], option').forEach(element => {
+        ['aria-label', 'title', 'placeholder', 'value'].forEach(attribute => {
+          const value = element.getAttribute(attribute);
+          if (value) element.setAttribute(attribute, translateValue(value));
+        });
       });
     }
 
@@ -462,6 +632,7 @@
       if (!isEnglish) {
         translateText(document.body);
         document.documentElement.lang = 'en';
+        document.title = translateValue(document.title);
         event.currentTarget.textContent = '日本語';
         event.currentTarget.setAttribute('aria-label', '日本語に戻す');
         isEnglish = true;

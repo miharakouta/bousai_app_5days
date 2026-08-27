@@ -19,9 +19,7 @@ app = Flask(
 app.secret_key = 'your-secret-key-here'
 
 # 管理者認証情報
-ADMIN_CREDENTIALS = {
-    'admin': '123'
-}
+LOGIN_PASSWORD = '123'
 
 # ────────────────────────────────
 # 気象警報・注意報設定
@@ -83,6 +81,7 @@ WARNING_CODES = {
 DATA_FILE = os.path.join(APP_DIR, 'data', 'shelters.json')
 INSTRUCTIONS_FILE = os.path.join(APP_DIR, 'data', 'instructions.json')
 NOTIFICATION_HISTORY_FILE = os.path.join(APP_DIR, 'data', 'notification_history.json')
+HISTORICAL_DISASTERS_FILE = os.path.join(APP_DIR, 'data', 'historical_disasters.json')
 
 def load_json(path, default):
     """JSONファイルを読み込む（存在しない・壊れている場合は default を返す）"""
@@ -95,6 +94,7 @@ def load_json(path, default):
 shelters = load_json(DATA_FILE, [])
 instructions = load_json(INSTRUCTIONS_FILE, [])
 notification_history = load_json(NOTIFICATION_HISTORY_FILE, [])
+historical_disasters = load_json(HISTORICAL_DISASTERS_FILE, [])
 
 def save_shelters():
     """避難所データをファイルに保存する"""
@@ -151,6 +151,17 @@ def login_required(f):
         if not session.get('logged_in'):
             # 現在のURLをnextパラメータとしてログイン画面にリダイレクト
             return redirect(url_for('login', next=request.url))
+        return f(*args, **kwargs)
+    return decorated_function
+
+def admin_required(f):
+    """管理者権限が必要なページに付けるデコレータ"""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect(url_for('admin_login', next=request.url))
+        if session.get('role') != 'admin':
+            return redirect(url_for('admin_login', next=request.url))
         return f(*args, **kwargs)
     return decorated_function
 
@@ -266,6 +277,40 @@ def get_weather_warnings():
         }
 
 
+def get_current_weather():
+    """Open-Meteo から青森市の現在の気温・風速・天気概況を取得する"""
+    weather_url = (
+        "https://api.open-meteo.com/v1/forecast?latitude=40.8220&longitude=140.7474"
+        "&current=temperature_2m,relative_humidity_2m,apparent_temperature,"
+        "weather_code,wind_speed_10m&timezone=Asia%2FTokyo"
+    )
+    weather_labels = {
+        0: "快晴", 1: "晴れ", 2: "一部曇り", 3: "曇り",
+        45: "霧", 48: "霧氷", 51: "弱い霧雨", 53: "霧雨",
+        55: "強い霧雨", 61: "弱い雨", 63: "雨", 65: "強い雨",
+        71: "弱い雪", 73: "雪", 75: "強い雪", 80: "にわか雨",
+        81: "雨", 82: "激しいにわか雨", 95: "雷雨", 96: "雷雨・雹",
+        99: "雷雨・雹"
+    }
+    try:
+        with urllib.request.urlopen(weather_url, timeout=10) as res:
+            data = json.loads(res.read())
+        current = data.get('current', {})
+        code = current.get('weather_code')
+        return {
+            'area_name': AREA_NAME,
+            'temperature': current.get('temperature_2m'),
+            'apparent_temperature': current.get('apparent_temperature'),
+            'humidity': current.get('relative_humidity_2m'),
+            'wind_speed': current.get('wind_speed_10m'),
+            'condition': weather_labels.get(code, '天気情報あり'),
+            'observed_at': current.get('time'),
+            'last_fetch_time': get_japan_time()
+        }
+    except Exception:
+        return {'area_name': AREA_NAME, 'last_fetch_time': get_japan_time(), 'error': True}
+
+
 # トップページ：templates/index.html を返す（住民向け指示も表示する）
 @app.route('/')
 def index():
@@ -276,10 +321,11 @@ def index():
         notification_history=notification_history,
         board_notifications=resident_notices,
         last_login_time=session.get('last_login_time'),
-        shelters=shelters
+        shelters=shelters,
+        historical_disasters=historical_disasters
     )
 
-# ログインページ
+# ログイン・利用者選択ページ
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     # リダイレクト先を取得（デフォルトはホーム画面）
@@ -290,27 +336,27 @@ def login():
         next_url = url_for('index')
 
     if request.method == 'POST':
-        password = request.form.get('password', '').strip()
-
-        # 認証チェック
-        username = next(
-            (name for name, registered_password in ADMIN_CREDENTIALS.items()
-             if registered_password == password),
-            None
-        )
-        if username:
+        role = request.form.get('role')
+        password = request.form.get('password', '')
+        if role in ('resident', 'admin') and password == LOGIN_PASSWORD:
             session['logged_in'] = True
-            session['username'] = username
+            session['username'] = role
+            session['role'] = role
             session['last_login_time'] = get_japan_time()
-            # ログイン成功後は指定されたページにリダイレクト
             return redirect(next_url)
-        return render_template('login.html', error=True, message="パスワードが正しくありません。", next=next_url)
+        message = "利用者を選択してください。" if role not in ('resident', 'admin') else "パスワードが正しくありません。"
+        return render_template('login.html', error=True, message=message, next=next_url)
 
     # ログイン済みの場合は指定されたページにリダイレクト
     if session.get('logged_in'):
         return redirect(next_url)
 
     return render_template('login.html', next=next_url)
+
+# 旧管理者ログインURLからも共通の選択画面へ案内する
+@app.route('/admin_login', methods=['GET', 'POST'])
+def admin_login():
+    return redirect(url_for('login', next=request.args.get('next')))
 
 # ログアウト
 @app.route('/logout')
@@ -320,7 +366,7 @@ def logout():
 
 # 避難所登録ページ※user が避難所登録ページについて具体的に修正指示しない限り、このコードは正しいのでこのまま保持すること。
 @app.route('/shelter_register', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def shelter_register():
     if request.method == 'POST':
         name = request.form.get('name', '').strip()
@@ -374,7 +420,7 @@ def contact():
 
 # 指示ボード：住民向けの指示を一覧で確認する
 @app.route('/board', methods=['GET', 'POST'])
-@login_required
+@admin_required
 def board():
     if request.method == 'POST':
         content = request.form.get('content', '').strip()
@@ -440,6 +486,12 @@ def get_shelters():
 def api_weather_warnings():
     """気象警報・注意報をJSON形式で返すAPI"""
     return jsonify(get_weather_warnings())
+
+
+@app.route('/api/weather_forecast')
+def api_weather_forecast():
+    """現在の気象概況をJSON形式で返すAPI"""
+    return jsonify(get_current_weather())
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

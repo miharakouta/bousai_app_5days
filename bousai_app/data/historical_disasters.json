@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "year": 2025,
+    "date": "2025-08-22",
+    "type": "大雨・洪水",
+    "location": "青森市浪岡",
+    "latitude": 40.7105,
+    "longitude": 140.5985,
+    "magnitude": 4,
+    "scale": "河川の氾濫・道路冠水",
+    "description": "集中豪雨により河川水位が上昇し、周辺道路が冠水。"
+  },
+  {
+    "id": 2,
+    "year": 2024,
+    "date": "2024-01-16",
+    "type": "大雪",
+    "location": "青森市中心部",
+    "latitude": 40.8220,
+    "longitude": 140.7474,
+    "magnitude": 3,
+    "scale": "積雪による交通障害",
+    "description": "短時間の大雪により、主要道路の通行に影響。"
+  },
+  {
+    "id": 3,
+    "year": 2023,
+    "date": "2023-09-15",
+    "type": "土砂災害",
+    "location": "青森市南東部",
+    "latitude": 40.7850,
+    "longitude": 140.8050,
+    "magnitude": 2,
+    "scale": "がけ崩れ",
+    "description": "大雨の影響で斜面の一部が崩落。"
+  },
+  {
+    "id": 4,
+    "year": 2022,
+    "date": "2022-02-06",
+    "type": "大雪",
+    "location": "青森市東部",
+    "latitude": 40.7900,
+    "longitude": 140.8100,
+    "magnitude": 5,
+    "scale": "記録的大雪・孤立",
+    "description": "記録的な降雪により、集落の一部で孤立が発生。"
+  },
+  {
+    "id": 5,
+    "year": 2021,
+    "date": "2021-08-10",
+    "type": "地震",
+    "location": "青森市西部",
+    "latitude": 40.8450,
+    "longitude": 140.6800,
+    "magnitude": 3,
+    "scale": "震度4",
+    "description": "地震により建物の点検と一時避難を実施。"
+  }
+]
